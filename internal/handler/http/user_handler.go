@@ -16,8 +16,15 @@ func NewUserHandler(srv userSrv.UserService) *UserHandler {
 	return &UserHandler{UserSrv: srv}
 }
 
+// @Summary Get user profile
+// @Tags users
+// @Produce json
+// @Success 200 {object} map[string]any
+// @Failure 401 {object} map[string]any
+// @Router /users [get]
+
 func (h *UserHandler) RegisterRoutes(r chi.Router) {
-	r.Route("/users", func(r chi.Router) {
+	r.Route("/profile", func(r chi.Router) {
 		r.Get("/", h.ListUser)
 		r.Put("/", h.UpdateProfile)
 	})
@@ -41,6 +48,13 @@ func (h *UserHandler) ListUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// @Summary Update user profile
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]any
+// @Failure 401 {object} map[string]any
+// @Router /users [put]
 func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIDFromContext(r.Context())
 	if !ok {

@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	authService "ecommerce/internal/service/auth"
 	"net/http"
 	"strings"
 
@@ -14,14 +15,8 @@ const ContextKeyUserID ContextKey = "user_id"
 const ContextKeyUserRole ContextKey = "user_role"
 const ContextKeyUserEmail ContextKey = "user_email"
 
-type AuthClaims struct {
-	UserID uuid.UUID
-	Role   string
-	Email  string
-}
-
 type AuthService interface {
-	ValidateToken(tokenString string) (*AuthClaims, error)
+	ValidateToken(tokenString string) (*authService.Claims, error)
 }
 
 func RequireAuth(authSrv AuthService) func(http.Handler) http.Handler {

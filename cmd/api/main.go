@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"ecommerce/internal/db"
-	service "ecommerce/internal/service/user"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +14,14 @@ import (
 
 	httpHandler "ecommerce/internal/handler/http"
 	postgres "ecommerce/internal/repository/postgres"
+	authService "ecommerce/internal/service/auth"
+	userService "ecommerce/internal/service/user"
 )
+
+// @title Ecommerce API
+// @version 1.0
+// @host localhost:8080
+// @BasePath/api/v1
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -29,7 +35,7 @@ func main() {
 	dbName := getEnv("DB_NAME", "ecommerce_db")
 	dbSslMode := getEnv("DB_SSLMODE", "disable")
 	serverPort := getEnv("SERVER_PORT", "8080")
-	//jwtSecret := getEnv("JWT_SECRET", "your-super-secret-jwt-key-change-in-production")
+	jwtSecret := getEnv("JWT_SECRET", "your-super-secret-jwt-key-change-in-production")
 
 	dbconfig := db.Config{
 		Host:     dbHost,
@@ -47,11 +53,15 @@ func main() {
 	defer database.Close()
 
 	log.Println("Connected to database established")
+
+	log.Println("Database connection established")
 	userRepo := postgres.NewUserRepository(database)
 
-	userSvc := service.NewService(userRepo)
+	authSvc := authService.NewService(userRepo, jwtSecret)
+	userSvc := userService.NewService(userRepo)
 
 	router := httpHandler.NewRouter(httpHandler.RouterConfig{
+		AuthService: authSvc,
 		UserService: userSvc,
 	})
 
@@ -76,7 +86,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server....")
+	log.Println("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
