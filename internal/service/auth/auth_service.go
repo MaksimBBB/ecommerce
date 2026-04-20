@@ -72,13 +72,18 @@ func (s *service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
 	req.FirstName = strings.TrimSpace(req.FirstName)
 	req.LastName = strings.TrimSpace(req.LastName)
+	req.Password = strings.TrimSpace(req.Password)
 
-	if req.Email == "" || !strings.Contains(req.Email, "@") {
-		return nil, ErrInvalidEmail
+	if req.Email == "" {
+		return nil, ErrEmailRequired
+	}
+
+	if req.Password == "" {
+		return nil, ErrPasswordRequired
 	}
 
 	if len(req.Password) < 8 {
-		return nil, ErrInvalidPassword
+		return nil, ErrWeakPassword
 	}
 
 	if len(req.FirstName) < 2 {
@@ -116,13 +121,14 @@ func (s *service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 
 func (s *service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, error) {
 	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
+	req.Password = strings.TrimSpace(req.Password)
 
-	if req.Email == "" || !strings.Contains(req.Email, "@") {
-		return nil, ErrInvalidEmail
+	if req.Email == "" {
+		return nil, ErrEmailRequired
 	}
 
-	if strings.TrimSpace(req.Password) == "" {
-		return nil, ErrInvalidPassword
+	if req.Password == "" {
+		return nil, ErrPasswordRequired
 	}
 
 	user, err := s.userRepo.GetByEmail(ctx, req.Email)
@@ -140,16 +146,16 @@ func (s *service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 func (s *service) RefreshToken(ctx context.Context, refreshToken string) (*AuthResponse, error) {
 	claims, err := s.validate(refreshToken)
 	if err != nil {
-		return nil, ErrInvalidRefreshToken
+		return nil, err
 	}
 
 	if claims.Type != "refresh" {
-		return nil, ErrInvalidRefreshToken
+		return nil, ErrInvalidToken
 	}
 
 	user, err := s.userRepo.GetByID(ctx, claims.UserID)
 	if err != nil {
-		return nil, ErrInvalidRefreshToken
+		return nil, ErrInvalidToken
 	}
 
 	return s.buildAuthResponse(user)
@@ -216,7 +222,7 @@ func (s *service) validate(tokenString string) (*Claims, error) {
 	})
 	if err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "expired") {
-			return nil, ErrExpiredToken
+			return nil, ErrTokenExpired
 		}
 
 		return nil, ErrInvalidToken

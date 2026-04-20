@@ -11,8 +11,11 @@ import (
 )
 
 type RouterConfig struct {
-	AuthService authService.AuthService
-	UserService userService.UserService
+	AuthService    authService.AuthService
+	UserService    userService.UserService
+	ProductService productService.ProductService
+	CartService    cartService.CartService
+	OrderService   orderService.OrderService
 }
 
 func NewRouter(config RouterConfig) *chi.Mux {
@@ -22,6 +25,7 @@ func NewRouter(config RouterConfig) *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+	r.Use(CORS)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		respondJSON(w, http.StatusOK, map[string]string{
@@ -37,15 +41,33 @@ func NewRouter(config RouterConfig) *chi.Mux {
 		authHandler := NewAuthHandler(config.AuthService)
 		authHandler.RegisterRoutes(r)
 
+		productHandler := NewProductHandler(config.ProductService)
+		productHandler.RegisterRoutes(r)
+
 		r.Group(func(r chi.Router) {
 			r.Use(RequireAuth(config.AuthService))
 			userHandler := NewUserHandler(config.UserService)
 			userHandler.RegisterRoutes(r)
+
+			cartHandler := NewCartHandler(config.CartService)
+			cartHandler.RegisterRoutes(r)
+
+			orderHandler := NewOrderHandler(config.OrderService)
+			orderHandler.RegisterRoutes(r)
 		})
 	})
 
 	r.Group(func(r chi.Router) {
+		r.Use(RequireAuth(config.AuthService))
 		r.Use(RequireAdmin)
+
+		adminHandler := NewAdminHandler(
+			config.UserService,
+			config.OrderService,
+			config.ProductService,
+		)
+
+		adminHandler.RegisterRoutes(r)
 	})
 
 	return r

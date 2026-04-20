@@ -157,17 +157,17 @@ type SuccessResponse struct {
 // handleAuthError maps auth service errors to HTTP status codes
 func handleAuthError(w http.ResponseWriter, err error) {
 	switch err {
-	//case authService.ErrEmailRequired,
-	//authService.ErrPasswordRequired,
-	//authService.ErrWeakPassword:
-	//respondError(w, http.StatusBadRequest, err.Error())
+	case authService.ErrEmailRequired,
+		authService.ErrPasswordRequired,
+		authService.ErrWeakPassword:
+		respondError(w, http.StatusBadRequest, err.Error())
 	case authService.ErrUserAlreadyExists:
 		respondError(w, http.StatusConflict, err.Error())
 	case authService.ErrInvalidCredentials:
 		respondError(w, http.StatusUnauthorized, err.Error())
-	//case authService.ErrInvalidToken,
-	//authService.ErrTokenExpired:
-	//respondError(w, http.StatusUnauthorized, err.Error())
+	case authService.ErrInvalidToken,
+		authService.ErrTokenExpired:
+		respondError(w, http.StatusUnauthorized, err.Error())
 	default:
 		respondError(w, http.StatusInternalServerError, "Internal server error")
 	}
