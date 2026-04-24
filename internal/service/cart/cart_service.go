@@ -19,11 +19,15 @@ type CartService interface {
 }
 
 type service struct {
-	cartRepo repository.CartRepository
+	cartRepo    repository.CartRepository
+	productRepo repository.ProductRepository
 }
 
-func NewService(cartRepo repository.CartRepository) CartService {
-	return &service{cartRepo: cartRepo}
+func NewService(cartRepo repository.CartRepository, productRepo repository.ProductRepository) CartService {
+	return &service{
+		cartRepo:    cartRepo,
+		productRepo: productRepo,
+	}
 }
 
 type AddItemRequest struct {
@@ -46,9 +50,22 @@ func (s *service) AddItem(ctx context.Context, userID uuid.UUID, req AddItemRequ
 		return nil, ErrInvalidQuantity
 	}
 
+	product, err := s.productRepo.GetByID(ctx, req.ProductID)
+	if err != nil {
+		if isNotFoundError(err) {
+			return nil, ErrInvalidCartItem
+		}
+
+		return nil, fmt.Errorf("failed to get product: %w", err)
+	}
+
 	existingItem, err := s.cartRepo.GetItem(ctx, userID, req.ProductID)
 	if err == nil && existingItem != nil {
 		newQuantity := existingItem.Quantity + req.Quantity
+		if product.Stock < newQuantity {
+			return nil, ErrInsufficientStock
+		}
+
 		if err := s.cartRepo.UpdateQuantity(ctx, existingItem.ID, newQuantity); err != nil {
 			if isNotFoundError(err) {
 				return nil, ErrCartItemNotFound
@@ -63,6 +80,10 @@ func (s *service) AddItem(ctx context.Context, userID uuid.UUID, req AddItemRequ
 
 	if err != nil && !isNotFoundError(err) {
 		return nil, fmt.Errorf("failed to get cart item: %w", err)
+	}
+
+	if product.Stock < req.Quantity {
+		return nil, ErrInsufficientStock
 	}
 
 	item := &models.CartItem{
@@ -104,6 +125,10 @@ func (s *service) UpdateQuantity(ctx context.Context, userID, itemID uuid.UUID, 
 	item, err := s.findUserCartItem(ctx, userID, itemID)
 	if err != nil {
 		return err
+	}
+
+	if item.ProductStock < quantity {
+		return ErrInsufficientStock
 	}
 
 	if err := s.cartRepo.UpdateQuantity(ctx, item.ID, quantity); err != nil {

@@ -193,7 +193,8 @@ func handleOrderError(w http.ResponseWriter, err error) {
 		orderService.ErrInvalidOrderStatus,
 		orderService.ErrEmptyOrderItems,
 		orderService.ErrInvalidShippingAddress,
-		orderService.ErrInvalidPaymentMethod:
+		orderService.ErrInvalidPaymentMethod,
+		orderService.ErrInsufficientStock:
 		respondError(w, http.StatusBadRequest, err.Error())
 	case orderService.ErrOrderNotFound:
 		respondError(w, http.StatusNotFound, err.Error())

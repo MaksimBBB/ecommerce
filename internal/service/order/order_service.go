@@ -20,14 +20,16 @@ type OrderService interface {
 }
 
 type service struct {
-	orderRepo cartrepo.OrderRepository
-	cartRepo  cartrepo.CartRepository
+	orderRepo   cartrepo.OrderRepository
+	cartRepo    cartrepo.CartRepository
+	productRepo cartrepo.ProductRepository
 }
 
-func NewService(orderRepo cartrepo.OrderRepository, cartRepo cartrepo.CartRepository) OrderService {
+func NewService(orderRepo cartrepo.OrderRepository, cartRepo cartrepo.CartRepository, productRepo cartrepo.ProductRepository) OrderService {
 	return &service{
-		orderRepo: orderRepo,
-		cartRepo:  cartRepo,
+		orderRepo:   orderRepo,
+		cartRepo:    cartRepo,
+		productRepo: productRepo,
 	}
 }
 
@@ -63,12 +65,41 @@ func (s *service) CreateOrder(ctx context.Context, userID uuid.UUID, req CreateO
 			return nil, ErrInvalidOrderItem
 		}
 
+		if item.ProductStock < item.Quantity {
+			return nil, ErrInsufficientStock
+		}
+
 		orderItems = append(orderItems, &models.OrderItem{
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,
 			Price:     item.ProductPrice,
 		})
 		totalAmount += item.ProductPrice * float64(item.Quantity)
+	}
+
+	updatedProducts := make([]*models.Product, 0, len(cartItems))
+	for _, item := range cartItems {
+		product, err := s.productRepo.GetByID(ctx, item.ProductID)
+		if err != nil {
+			if isNotFoundError(err) {
+				return nil, ErrInvalidOrderItem
+			}
+
+			return nil, fmt.Errorf("failed to get product for order: %w", err)
+		}
+
+		if product.Stock < item.Quantity {
+			return nil, ErrInsufficientStock
+		}
+
+		product.Stock -= item.Quantity
+		updatedProducts = append(updatedProducts, product)
+	}
+
+	for _, product := range updatedProducts {
+		if err := s.productRepo.Update(ctx, product); err != nil {
+			return nil, fmt.Errorf("failed to update product stock: %w", err)
+		}
 	}
 
 	order := &models.Order{
@@ -156,6 +187,31 @@ func (s *service) CancelOrder(ctx context.Context, userID, orderID uuid.UUID) er
 
 	if order.UserID != userID {
 		return ErrOrderNotFound
+	}
+
+	items, err := s.orderRepo.GetOrderItems(ctx, orderID)
+	if err != nil {
+		if isNotFoundError(err) {
+			return ErrOrderNotFound
+		}
+
+		return fmt.Errorf("failed to get order items before cancel: %w", err)
+	}
+
+	for _, item := range items {
+		product, err := s.productRepo.GetByID(ctx, item.ProductID)
+		if err != nil {
+			if isNotFoundError(err) {
+				return ErrInvalidOrderItem
+			}
+
+			return fmt.Errorf("failed to get product for cancel: %w", err)
+		}
+
+		product.Stock += item.Quantity
+		if err := s.productRepo.Update(ctx, product); err != nil {
+			return fmt.Errorf("failed to restore product stock: %w", err)
+		}
 	}
 
 	if err := s.orderRepo.Cancel(ctx, orderID); err != nil {

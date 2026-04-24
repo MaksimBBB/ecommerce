@@ -42,5 +42,15 @@ INSERT INTO products (name, description, price, stock, category_id) VALUES
 ('Jacket', 'Winter jacket', 129.99, 100, 'c3333333-3333-3333-3333-333333333333'),
 ('Cap', 'Baseball cap', 14.99, 400, 'c3333333-3333-3333-3333-333333333333'),
 ('Socks Pack', '5 pairs', 9.99, 600, 'c3333333-3333-3333-3333-333333333333');
+INSERT INTO products (name, description, price, stock, category_id) VALUES
+
+('Smartphone', 'Latest smartphone model', 400.99, 70, 'c1111111-1111-1111-1111-111111111111'),
+('Bluetooth Speaker', 'Portable speaker', 79.99, 130, 'c1111111-1111-1111-1111-111111111111'),
+('Book About Animals', 'Read about animals', 80.99, 90, 'c2222222-2222-2222-2222-222222222222'),
+('Alphabet', 'Learn alphabet', 50.99, 90, 'c2222222-2222-2222-2222-222222222222'),
+('GoJunior T-Shirt', 'Cool design', 30.99, 300, 'c3333333-3333-3333-3333-333333333333'),
+('GoJunior Socks', 'Cool design', 25.99, 300, 'c3333333-3333-3333-3333-333333333333');
+
+
 
 SELECT 'Seed data loaded!' AS status;

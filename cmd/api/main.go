@@ -71,8 +71,8 @@ func main() {
 	authSvc := authService.NewService(userRepo, jwtSecret)
 	userSvc := userService.NewService(userRepo)
 	productSvc := productService.NewService(productRepo)
-	cartSvc := cartService.NewService(cartRepo)
-	orderSvc := orderService.NewService(orderRepo, cartRepo)
+	cartSvc := cartService.NewService(cartRepo, productRepo)
+	orderSvc := orderService.NewService(orderRepo, cartRepo, productRepo)
 
 	router := httpHandler.NewRouter(httpHandler.RouterConfig{
 		AuthService:    authSvc,

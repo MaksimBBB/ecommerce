@@ -24,7 +24,6 @@ type AuthService interface {
 	ValidateToken(tokenString string) (*Claims, error)
 }
 
-// RegisterRequest is the DTO for user registration
 type RegisterRequest struct {
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8"`
@@ -32,20 +31,17 @@ type RegisterRequest struct {
 	LastName  string `json:"last_name" validate:"required,min=2"`
 }
 
-// LoginRequest is the DTO for user login
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
 
-// AuthResponse contains authentication tokens
 type AuthResponse struct {
 	AccessToken  string       `json:"access_token"`
 	RefreshToken string       `json:"refresh_token"`
 	User         *models.User `json:"user"`
 }
 
-// Claims represents JWT claims
 type Claims struct {
 	UserID uuid.UUID `json:"user_id"`
 	Email  string    `json:"email"`
@@ -60,7 +56,7 @@ type service struct {
 	tokenDuration time.Duration
 }
 
-// NewService creates a new auth service
+// creates a new auth service
 func NewService(userRepo repository.UserRepository, jwtSecret string) AuthService {
 	return &service{
 		userRepo:      userRepo,
@@ -69,7 +65,7 @@ func NewService(userRepo repository.UserRepository, jwtSecret string) AuthServic
 	}
 }
 
-// register creates a new user account
+// creates a new user account
 func (s *service) Register(ctx context.Context, req RegisterRequest) (*AuthResponse, error) {
 	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
 	req.FirstName = strings.TrimSpace(req.FirstName)

@@ -203,7 +203,8 @@ func (h *CartHandler) ClearCart(w http.ResponseWriter, r *http.Request) {
 func handleCartError(w http.ResponseWriter, err error) {
 	switch err {
 	case cartService.ErrInvalidCartItem,
-		cartService.ErrInvalidQuantity:
+		cartService.ErrInvalidQuantity,
+		cartService.ErrInsufficientStock:
 		respondError(w, http.StatusBadRequest, err.Error())
 	case cartService.ErrCartItemNotFound:
 		respondError(w, http.StatusNotFound, err.Error())
