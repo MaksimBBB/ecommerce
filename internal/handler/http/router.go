@@ -2,6 +2,9 @@ package http
 
 import (
 	authService "ecommerce/internal/service/auth"
+	cartService "ecommerce/internal/service/cart"
+	orderService "ecommerce/internal/service/order"
+	productService "ecommerce/internal/service/product"
 	userService "ecommerce/internal/service/user"
 	"net/http"
 
@@ -34,7 +37,7 @@ func NewRouter(config RouterConfig) *chi.Mux {
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+		httpSwagger.URL("/swagger/doc.json"),
 	))
 
 	r.Route("/api/v1", func(r chi.Router) {
@@ -55,19 +58,19 @@ func NewRouter(config RouterConfig) *chi.Mux {
 			orderHandler := NewOrderHandler(config.OrderService)
 			orderHandler.RegisterRoutes(r)
 		})
-	})
 
-	r.Group(func(r chi.Router) {
-		r.Use(RequireAuth(config.AuthService))
-		r.Use(RequireAdmin)
+		r.Group(func(r chi.Router) {
+			r.Use(RequireAuth(config.AuthService))
+			r.Use(RequireAdmin)
 
-		adminHandler := NewAdminHandler(
-			config.UserService,
-			config.OrderService,
-			config.ProductService,
-		)
+			adminHandler := NewAdminHandler(
+				config.UserService,
+				config.OrderService,
+				config.ProductService,
+			)
 
-		adminHandler.RegisterRoutes(r)
+			adminHandler.RegisterRoutes(r)
+		})
 	})
 
 	return r

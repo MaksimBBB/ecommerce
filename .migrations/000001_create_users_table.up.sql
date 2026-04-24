@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS users(
     role VARCHAR(20) NOT NULL DEFAULT 'customer',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         CHECK (role IN ('customer', 'admin')),
-    create_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    update_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_users_email ON user(email);
-CREATE INDEX idx_users_role ON user(role);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);

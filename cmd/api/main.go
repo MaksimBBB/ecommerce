@@ -12,9 +12,13 @@ import (
 
 	"github.com/joho/godotenv"
 
+	_ "ecommerce/docs"
 	httpHandler "ecommerce/internal/handler/http"
 	postgres "ecommerce/internal/repository/postgres"
 	authService "ecommerce/internal/service/auth"
+	cartService "ecommerce/internal/service/cart"
+	orderService "ecommerce/internal/service/order"
+	productService "ecommerce/internal/service/product"
 	userService "ecommerce/internal/service/user"
 )
 
@@ -22,6 +26,10 @@ import (
 // @version 1.0
 // @host localhost:8080
 // @BasePath/api/v1
+// @schemes http
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -56,13 +64,22 @@ func main() {
 
 	log.Println("Database connection established")
 	userRepo := postgres.NewUserRepository(database)
+	productRepo := postgres.NewProductRepository(database)
+	cartRepo := postgres.NewCartRepository(database)
+	orderRepo := postgres.NewOrderRepository(database)
 
 	authSvc := authService.NewService(userRepo, jwtSecret)
 	userSvc := userService.NewService(userRepo)
+	productSvc := productService.NewService(productRepo)
+	cartSvc := cartService.NewService(cartRepo)
+	orderSvc := orderService.NewService(orderRepo, cartRepo)
 
 	router := httpHandler.NewRouter(httpHandler.RouterConfig{
-		AuthService: authSvc,
-		UserService: userSvc,
+		AuthService:    authSvc,
+		UserService:    userSvc,
+		ProductService: productSvc,
+		CartService:    cartSvc,
+		OrderService:   orderSvc,
 	})
 
 	server := &http.Server{

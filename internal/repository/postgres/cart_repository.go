@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	database "ecommerce/internal/db"
@@ -90,6 +92,10 @@ func (c *cartRepo) GetItem(ctx context.Context, userID uuid.UUID, productID uuid
 
 	err := c.db.GetContext(ctx, &item, query, userID, productID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("cart item not found")
+		}
+
 		return nil, fmt.Errorf("failed to get cart item: %w", err)
 	}
 

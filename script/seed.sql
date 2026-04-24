@@ -6,10 +6,10 @@ TRUNCATE TABLE order_items, orders, cart_items, products, categories, users CASC
 -- ============================================
 INSERT INTO users (id, email, password_hash, first_name, last_name, role) VALUES
 ('11111111-1111-1111-1111-111111111111', 'admin@test.com',
- '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+ '$2a$10$5I.Fp1FynSEAjYEgnBTjpuKAtbAV18tSdqrYn6.G8AAA1bXRJNhgu',
  'Admin', 'User', 'admin'),
 ('22222222-2222-2222-2222-222222222222', 'user@test.com',
- '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+ '$2a$10$5I.Fp1FynSEAjYEgnBTjpuKAtbAV18tSdqrYn6.G8AAA1bXRJNhgu',
  'John', 'Doe', 'customer');
 
 -- ============================================

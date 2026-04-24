@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -98,6 +100,9 @@ func (s *service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 	if err == nil && existingUser != nil {
 		return nil, ErrUserAlreadyExists
 	}
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
+	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -109,7 +114,7 @@ func (s *service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 		PasswordHash: string(passwordHash),
 		FirstName:    req.FirstName,
 		Surname:      req.LastName,
-		Role:         "user",
+		Role:         "customer",
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {

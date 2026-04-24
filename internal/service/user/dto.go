@@ -13,16 +13,16 @@ type UserFilter struct {
 }
 
 type UserListResponse struct {
-	Users  []*models.User
-	Total  int
-	Limit  int
-	Offset int
+	Users  []*models.User `json:"users"`
+	Total  int            `json:"total"`
+	Limit  int            `json:"limit"`
+	Offset int            `json:"offset"`
 }
 
 type UpdateProfileRequest struct {
-	Email     *string
-	Password  *string
+	Email     *string `json:"email"`
+	Password  *string `json:"password"`
 	FirstName *string `json:"first_name" validate:"omitempty,min=2,max=100"`
 	LastName  *string `json:"last_name" validate:"omitempty,min=2,max=100"`
-	Role      *string
+	Role      *string `json:"role"`
 }

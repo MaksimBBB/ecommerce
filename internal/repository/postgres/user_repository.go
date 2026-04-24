@@ -66,7 +66,7 @@ func (u *userRepo) Delete(ctx context.Context, id uuid.UUID) error {
 func (u *userRepo) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
 	query := `
-		SELECT id, email, password_hash, first_name, last_name, role, create_at, update_at
+		SELECT id, email, password_hash, first_name, last_name, role, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`

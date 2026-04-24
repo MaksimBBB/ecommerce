@@ -13,6 +13,6 @@ type User struct {
 	FirstName    string    `db:"first_name" json:"first_name"`
 	Surname      string    `db:"last_name" json:"last_name"`
 	Role         string    `db:"role" json:"role"`
-	CreatedAt    time.Time `db:"create_at" json:"create_at"`
-	UpdatedAt    time.Time `db:"update_at" json:"update_at"`
+	CreatedAt    time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at" json:"updated_at"`
 }
